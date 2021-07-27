@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'repository.stash/**'
+      - '!repository.stash/repository.stash*.zip'
+  pull_request:
+    paths:
+      - 'repository.stash/**'
+      - '!repository.stash/repository.stash*.zip'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v1
+      - name: Set addon version
+        run: sed --in-place '/<addon/ s/version="[^"]*"/version="'$(git rev-parse --short "$GITHUB_SHA")'"/' repository.stash/addon.xml
+      - name: Create addon zip
+        run: |
+          mkdir -p /tmp/repository.stash
+          rsync -a repository.stash/addon.xml /tmp/repository.stash
+          cd /tmp/
+          zip -r repository.stash.zip repository.stash/
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: repository.stash.zip
+          path: /tmp/repository.stash.zip

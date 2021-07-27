@@ -1,0 +1,24 @@
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-image:
+    name: Update repository package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Setup Python
+        uses: actions/setup-python@v2
+      - name: Update package
+        run: |
+          wget -O repository.stash/repository.stash-${GITHUB_REF##*/v}.zip "https://github.com/gitgiggety/repository.stash/releases/download/${{ github.event.release.tag_name }}/repository.stash.zip"
+          python generator.py repository.stash ${GITHUB_REF##*/v}
+      - name: Commit and push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update repository.stash to ${{ github.event.release.tag_name }}
+          file_pattern: repository.stash/*.zip addons.xml*
