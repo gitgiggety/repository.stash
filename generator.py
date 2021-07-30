@@ -23,11 +23,11 @@ def update_addons(addon_metadata):
         addons = xml.etree.ElementTree.parse(addons_file)
 
         root = addons.getroot()
-        addon_element = root.find('addon[@id="{}"]'.format(addon_metadata.get('id')))
+        addon_element = root.find('addon[@id="{}"][@versiom="{}"]'.format(addon_metadata.get('id'), addon_metadata.get("version")))
         if addon_element != None:
             root.remove(addon_element)
 
-        root.append(addon_metadata)
+        root.insert(0, addon_metadata)
 
     with open('addons.xml', 'wb') as addons_file:
         addons.write(addons_file, encoding='UTF-8', xml_declaration=True)
